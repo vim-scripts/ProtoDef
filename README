@@ -1,0 +1,22 @@
+This is a mirror of http://www.vim.org/scripts/script.php?script_id=2624
+
+Requires:
+- ctags 5.7 or greater
+- PERL (just PERL, you don't need to have Vim compiled with PERL support)
+- FSwitch Vim utility (vimscript #2590)
+
+Check out the video demo at: http://www.vimeo.com/4448265
+
+You've got a C++ header file and you've got some prototypes declared in there.  Now you need to create some definitions in a C++ implementation file.  What do you do?  Yank and paste?  Naw :)  Use this plugin instead...
+
+The concept is pretty simple: while in the implementation file, you hit a key and all of the currently undefined function prototypes in the header file are automatically pulled in to the implementation file and inserted at the current cursor position.
+
+- Pure virtual functions are ignored
+- Functions that are already defined in the header file are ignored
+- Free functions are brought in
+- Class name is automatically prefixed to member functions
+- Constructors and Destructors sort first
+- Only the missing items are pulled in so you can use this utility to bring the implementation file up to match the contents of the header file
+- However you format the prototype shouldn't really make a difference.  ProtoDef endeavours to reduce all declarations to a canonical form.
+
+ProtoDef can now be found on GitHub: http://github.com/ewiplayer/vim-protodef
