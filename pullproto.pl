@@ -58,7 +58,9 @@ while (<STDIN>)
     {
         $function =~ s/\s//g;
     }
-    if ($function eq $class || $function eq "~$class")
+    my ($justclass) = $class =~ m/^.*::(.*)$/;
+    $justclass = $class if !defined($justclass) || $justclass eq "";
+    if ($function eq $justclass || $function eq "~$justclass")
     {
         ($fname, $post) = $content =~ m/($function)\s*(\([^\)]*\)[^;]*);/m;
     }

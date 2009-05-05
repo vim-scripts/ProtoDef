@@ -149,6 +149,8 @@ definitions within it.
 							*protodef-changes*
 A. Change History~
 
+0.9.1
+	- Fix for nested classes
 0.9.0
 	- Initial release
 

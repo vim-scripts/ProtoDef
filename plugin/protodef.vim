@@ -12,6 +12,8 @@
 " 	           (see |copyright|) except use "protodef" instead of "Vim".
 " 	           No warranty, express or implied.
 " 	           Use At-Your-Own-Risk!
+"
+" Version:     0.9.1
 " ============================================================================
 
 if exists("g:disable_protodef")
@@ -135,17 +137,17 @@ function! s:GetFunctionPrototypesForCurrentBuffer()
             let class = ''
             let implementation = ''
             if len(parts) > 4
-                let part4 = matchstr(parts[4], '\zs.*\ze:')
+                let part4 = matchstr(parts[4], '\zs[^:]*\ze:')
                 if part4 == 'class'
-                    let class = matchstr(parts[4], ':\zs.*\ze')
+                    let class = matchstr(parts[4], 'class:\zs.*\ze')
                 elseif part4 == 'implementation'
-                    let implementation = matchstr(parts[4], ':\zs.*\ze')
+                    let implementation = matchstr(parts[4], 'implementation:\zs.*\ze')
                 endif
             endif
             if len(parts) > 5
                 let part5 = matchstr(parts[5], '\zs.*\ze:')
                 if part5 == 'implementation'
-                    let implementation = matchstr(parts[5], ':\zs.*\ze')
+                    let implementation = matchstr(parts[5], 'implementation:\zs.*\ze')
                 endif
             endif
             if implementation !=# 'pure virtual'
