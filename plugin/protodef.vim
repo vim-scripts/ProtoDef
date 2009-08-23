@@ -13,7 +13,7 @@
 " 	           No warranty, express or implied.
 " 	           Use At-Your-Own-Risk!
 "
-" Version:     0.9.1
+" Version:     0.9.2
 " ============================================================================
 
 if exists("g:disable_protodef")
@@ -114,9 +114,13 @@ endfunction
 " prototypes are then returned in an array in the same format as they appear
 " in the header file.
 " 
-function! s:GetFunctionPrototypesForCurrentBuffer()
+function! s:GetFunctionPrototypesForCurrentBuffer(opts)
     " FSReturnReadableCompanionFilename() is in the fswitch.vim plugin
     let companion = FSReturnReadableCompanionFilename('%')
+    let includeNS = 1
+    if has_key(a:opts, 'includeNS')
+        let includeNS = a:opts['includeNS']
+    endif
     if companion != ''
         " Get the data from ctags
         let ctagsoutput = system(g:protodefctagsexe . ' ' . g:protodef_ctags_flags . ' ' . companion)
@@ -140,6 +144,9 @@ function! s:GetFunctionPrototypesForCurrentBuffer()
                 let part4 = matchstr(parts[4], '\zs[^:]*\ze:')
                 if part4 == 'class'
                     let class = matchstr(parts[4], 'class:\zs.*\ze')
+                    if includeNS == 0
+                        let class = substitute(class, '^.*::', '', '')
+                    endif
                 elseif part4 == 'implementation'
                     let implementation = matchstr(parts[4], 'implementation:\zs.*\ze')
                 endif
@@ -179,9 +186,9 @@ endfunction
 " This is the real "public" function that can be used to return a string that
 " contains all of the prototypes turned into "real" functions.
 "
-function! protodef#ReturnSkeletonsFromPrototypesForCurrentBuffer()
+function! protodef#ReturnSkeletonsFromPrototypesForCurrentBuffer(opts)
     " Get the prototypes from the header file
-    let protos = s:GetFunctionPrototypesForCurrentBuffer()
+    let protos = s:GetFunctionPrototypesForCurrentBuffer(a:opts)
     let full = []
     for proto in protos
         " Clean out the default arguments as these don't belong in the implementation file
@@ -236,7 +243,10 @@ endfunction
 " ReturnSkeletonsFromPrototypesForCurrentBuffer() function.
 "
 function! s:MakeMapping()
-    nmap <buffer> <silent> <leader>PP :set paste<cr>i<c-r>=protodef#ReturnSkeletonsFromPrototypesForCurrentBuffer()<cr><esc>='[:set nopaste<cr>
+    if !exists('g:disable_protodef_mapping')
+        nmap <buffer> <silent> <leader>PP :set paste<cr>i<c-r>=protodef#ReturnSkeletonsFromPrototypesForCurrentBuffer({})<cr><esc>='[:set nopaste<cr>
+        nmap <buffer> <silent> <leader>PN :set paste<cr>i<c-r>=protodef#ReturnSkeletonsFromPrototypesForCurrentBuffer({'includeNS' : 0})<cr><esc>='[:set nopaste<cr>
+    endif
 endfunction
 
 augroup protodef_cpp_mapping
