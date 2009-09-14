@@ -178,6 +178,8 @@ calling the function:
 							*protodef-changes*
 A. Change History~
 
+0.9.3
+	- Fixed bug in autocmd mapping to change the ",C" to ".C"
 0.9.2
 	- Added the option to eliminate the namespaces from the definitions
 	- Added the <Leader>PN mapping to generate prototypes without

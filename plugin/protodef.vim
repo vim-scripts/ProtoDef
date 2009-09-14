@@ -13,7 +13,7 @@
 " 	           No warranty, express or implied.
 " 	           Use At-Your-Own-Risk!
 "
-" Version:     0.9.2
+" Version:     0.9.3
 " ============================================================================
 
 if exists("g:disable_protodef")
@@ -250,6 +250,6 @@ function! s:MakeMapping()
 endfunction
 
 augroup protodef_cpp_mapping
-    au! BufEnter *.cpp,*,C,*.cxx,*.cc,*.CC call s:MakeMapping()
+    au! BufEnter *.cpp,*.C,*.cxx,*.cc,*.CC call s:MakeMapping()
 augroup END
 
