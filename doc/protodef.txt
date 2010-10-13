@@ -143,6 +143,15 @@ In order to get ProtoDef working you'll need to do the following:
 	You can customize this and if you wish to do so, you should probably
 	just look in the code to see what you should make it look like.
 	
+				                  *'disable_protodef_sorting'*
+'disable_protodef_sorting' whatever (default is not defined)
+			   global
+
+	Protodef will perform a sort on the functions placed in the
+	implementation file.  If you don't want to do this then set this
+	variable and the order of the functions will be the same as in the
+	header file.
+
 				                  *'disable_protodef_mapping'*
 'disable_protodef_mapping' whatever (default is not defined)
 			   global
@@ -178,6 +187,16 @@ calling the function:
 							*protodef-changes*
 A. Change History~
 
+0.9.4
+	- Made sure that we need at least 7.0 (Timon Kelter)
+	- Introduced the disable_protodef_sorting variable.
+	- Added a fix to deal with default parameters that were class
+	  instances (e.g. MyClass()) (Matt Spear)
+	- Fixed function prototype parsing in pullproto.pl such that regex
+	  special characters are deal with nicely (Matt Spear)
+	- Handle template specializations properly (Matt Spear)
+	- Ensure that implementations in the header file but outside the class
+	  definition are not brought in to the implementation (Dmitry Bashkatov)
 0.9.3
 	- Fixed bug in autocmd mapping to change the ",C" to ".C"
 0.9.2

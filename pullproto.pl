@@ -33,6 +33,17 @@ open INFILE, "<$file" or die "unable to open $file";
 my @c = <INFILE>;
 close INFILE;
 
+# (Matt Spear) This is a strange regexp to check for matched <>, e.g. get<std::vector<unsigned> >(const std::string &s) const
+my $matched = qr/(?{local $d=0})
+\<
+(?:
+	\< (?{$d++})
+	| \> (?{$d--}) (?: (?{$d<0}) (?!))
+	| (?> [^\<\>]*)
+)
+\>
+/x;
+
 while (<STDIN>)
 {
     chomp;
@@ -62,13 +73,13 @@ while (<STDIN>)
     $justclass = $class if !defined($justclass) || $justclass eq "";
     if ($function eq $justclass || $function eq "~$justclass")
     {
-        ($fname, $post) = $content =~ m/($function)\s*(\([^\)]*\)[^;]*);/m;
+		($fname, $post) = $content =~ m/(\Q$function\E$matched?)\s*(\([^\)]*\)[^;]*);/m; # (Matt Spear) added \Q\E and $matched
     }
     else
     {
-        my @a = $content =~ m/(const)?\s*(unsigned)?\s*(\S+)\s*($function)\s*(\([^\)]*\)[^;]*);/m;
+		my @a = $content =~ m/(const)?\s*(unsigned)?\s*(\S+)\s*(\Q$function\E$matched?)\s*(\([^\)]*\)[^;]*);/m; # (Matt Spear) added \Q\E and $matched
         my $str = join(" ", @a);
-        ($pre, $fname, $post) = $str =~ m/(.*\s)($function)\s(.*)/s;
+		($pre, $fname, $post) = $str =~ m/(.*\s)(\Q$function\E$matched?)\s(.*)/s; # (Matt Spear) added \Q\E and $matched
         $pre =~ s/\s+/ /g;
         $pre =~ s/^\s+//g;
     }

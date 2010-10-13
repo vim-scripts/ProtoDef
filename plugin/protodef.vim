@@ -6,18 +6,23 @@
 "
 " Maintainer:  Derek Wyatt <derek at myfirstnamemylastname dot org>
 "
-" Last Change: May 1st 2009
+" Last Change: Oct 12 2010
 "
 " License:     The VIM LICENSE applies to fswitch.vim, and fswitch.txt
 " 	           (see |copyright|) except use "protodef" instead of "Vim".
 " 	           No warranty, express or implied.
 " 	           Use At-Your-Own-Risk!
 "
-" Version:     0.9.3
+" Version:     0.9.4
 " ============================================================================
 
 if exists("g:disable_protodef")
     finish
+endif
+
+if v:version < 700
+  echoerr "Protodef requires Vim 7.0 or higher!"
+  finish
 endif
 
 " =======================
@@ -173,7 +178,9 @@ function! s:GetFunctionPrototypesForCurrentBuffer(opts)
         " Make a stab at sorting the prototypes a bit by trying to put the
         " constructors and destructors at the top with free functions at the
         " bottom - everything else goes in between these bits.
-        let ret = sort(ret, "s:PrototypeSortCompare")
+        if !exists('g:disable_protodef_sorting')
+            let ret = sort(ret, "s:PrototypeSortCompare")
+        endif
         return ret
     endif
 
@@ -190,12 +197,20 @@ function! protodef#ReturnSkeletonsFromPrototypesForCurrentBuffer(opts)
     " Get the prototypes from the header file
     let protos = s:GetFunctionPrototypesForCurrentBuffer(a:opts)
     let full = []
+	let companion = FSReturnReadableCompanionFilename('%')
+	let header_contents = ''
+	for line in readfile(companion)
+		let header_contents .= line
+	endfor
     for proto in protos
         " Clean out the default arguments as these don't belong in the implementation file
         let params = matchstr(proto, '(\_.*$')
-        let params = substitute(params, '\s*=\s*[^,)]\+', '', 'g')
+        let params = substitute(params, '^(', '', '') " XXX batz added to strip the leading (
+        let tail   = matchstr(params, ')[^)]*$') " XXX bats added to strip the trail )...
+        let params = substitute(params, ')[^)]*$', '', '')
+        let params = substitute(params, '\s*=\s*[^,]\+', '', 'g') " XXX batz deleted the reliance on ) in the char class
         let params = escape(params, '~*&\\')
-        let proto = substitute(proto, '(\_.*$', params, '')
+        let proto = substitute(proto, '(\_.*$', '(' . params . tail, '') " XXX batz changed to replace the parens/tail stripped off
         " Set up the search expression so that we can check to see if what we're going to
         " put into the buffer is already there or not
         let protosearch = escape(proto, '~*')
@@ -207,7 +222,7 @@ function! protodef#ReturnSkeletonsFromPrototypesForCurrentBuffer(opts)
         " to kill the VIM regex engine so we'll squeeze these together
         let protosearch = substitute(protosearch, '\%\(\\_s\*\)\+', '\\_s*', 'g')
         " Now let's do the check to see if the prototype is already in the buffer
-        if search(protosearch, 'nw') == 0
+        if search(protosearch, 'nw') == 0 && match(header_contents, protosearch) == -1
             " it's not so start creating the entry
             call add(full, proto)
             call add(full, "{")
@@ -242,7 +257,7 @@ endfunction
 " Simply maps the appropriate key to run the
 " ReturnSkeletonsFromPrototypesForCurrentBuffer() function.
 "
-function! s:MakeMapping()
+function! protodef#MakeMapping()
     if !exists('g:disable_protodef_mapping')
         nmap <buffer> <silent> <leader>PP :set paste<cr>i<c-r>=protodef#ReturnSkeletonsFromPrototypesForCurrentBuffer({})<cr><esc>='[:set nopaste<cr>
         nmap <buffer> <silent> <leader>PN :set paste<cr>i<c-r>=protodef#ReturnSkeletonsFromPrototypesForCurrentBuffer({'includeNS' : 0})<cr><esc>='[:set nopaste<cr>
@@ -250,6 +265,6 @@ function! s:MakeMapping()
 endfunction
 
 augroup protodef_cpp_mapping
-    au! BufEnter *.cpp,*.C,*.cxx,*.cc,*.CC call s:MakeMapping()
+    au! BufEnter *.cpp,*.C,*.cxx,*.cc,*.CC call protodef#MakeMapping()
 augroup END
 
